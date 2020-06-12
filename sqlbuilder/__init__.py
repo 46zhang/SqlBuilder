@@ -180,3 +180,23 @@ class Delete(SqlBuilder):
             self.sql += " WHERE {} ".format(" or ".join(self.condition_or_parameter))
         self.sql += ";"
         return self.sql
+
+
+class Insert(SqlBuilder):
+    def __init__(self, table, columns: typing.List[str], values: typing.List):
+        super().__init__(table)
+        self.columns = columns
+        self.values = []
+        for v in values:
+            # 如果是字符串，那么value值应该加单引号
+            if isinstance(v, str):
+                self.values.append("'" + v + "'")
+            # 数字需要转为字符串方便后面拼接，但是不用加单引号
+            else:
+                self.values.append(str(v))
+
+    def build(self) -> str:
+        self.sql = "INSERT INTO {} ({}) value ({})".format(self.table, " , ".join(self.columns),
+                                                           " , ".join(self.values))
+        self.sql += ";"
+        return self.sql

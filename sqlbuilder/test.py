@@ -26,3 +26,5 @@ if __name__ == '__main__':
     print(s)
     a = Delete('user').where([Condition("name", "jense")]).build()
     print(a)
+    i = Insert('user', ['id', 'name', 'password'], [123, 'jense', '456']).build()
+    print(i)
