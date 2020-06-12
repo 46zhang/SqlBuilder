@@ -12,7 +12,7 @@ class OPERATION:
     OP_NOT_IN = "not in"
     OP_LIKE = "like"
     OP_NOT_LIKE = "not like"
-    OP_PREFIX = "$prefix"
+    OP_PREFIX = "prefix"
     OP_NOT_PREFIX = "not prefix"
     OP_SUFFIX = "suffix"
     OP_NOT_SUFFIX = "not suffix"
@@ -25,6 +25,13 @@ class OPERATION:
 
 
 class Condition:
+    """
+    Condition类，是条件的基本类，主要有三种类别
+    Condition(key,value):表示 key=value
+    Condition(key,value,ops):表示 key ops value ops可以为 OPERATION的前10种操作
+    Condition(key,value,ops,join_table):表示 ops(['join','left join','right join']) join_table on key=value
+    """
+
     def __init__(self, key: str, value: str, ops: str = None, join_table=None):
         self.key = key
         self.value = value
