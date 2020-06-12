@@ -32,7 +32,7 @@ class Condition:
     Condition(key,value,ops,join_table):表示 ops(['join','left join','right join']) join_table on key=value
     """
 
-    def __init__(self, key: str, value: str, ops: str = None, join_table=None):
+    def __init__(self, key: str, value: str or int, ops: str = None, join_table=None):
         self.key = key
         self.value = value
         self.ops = '='
@@ -44,7 +44,10 @@ class Condition:
 
     def to_string(self) -> str:
         if not self.join_table:
-            return "{} {} '{}'".format(self.key, self.ops, self.value)
+            if isinstance(self.value, str):
+                return "{} {} '{}'".format(self.key, self.ops, self.value)
+            else:
+                return "{} {} {}".format(self.key, self.ops, self.value)
         # 如果存在join_table 说明是join条件的，那么ops是['join','left_join',...]
         else:
             return "{} {} on {} = {}".format(self.ops, self.join_table, self.key, self.value)
@@ -67,16 +70,16 @@ class SqlBuilder(object):
                 self.join_parameter.append(t.to_string())
         return self
 
-    def where(self, conditions: typing.List[Condition], ops: str = None) -> object:
+    def where(self, conditions: typing.List[typing.Tuple[str, str, str or int]], ops: str = None) -> object:
         # 默认是条件and
         if not ops or ops == OPERATION.OP_AND:
             # 遍历，然后添加字符串到condition_parameter列表中
             for c in conditions:
-                self.condition_and_parameter.append(c.to_string())
+                self.condition_and_parameter.append(Condition(c[0], c[2], c[1]).to_string())
         # 添加到或的条件中
         elif ops == OPERATION.OP_OR:
             for c in conditions:
-                self.condition_or_parameter.append(c.to_string())
+                self.condition_or_parameter.append(Condition(c[0], c[2], c[1]).to_string())
         return self
 
     def group_by(self, columns: typing.List[str]):
@@ -134,9 +137,9 @@ class Select(SqlBuilder):
 
 
 class Update(SqlBuilder):
-    def __init__(self, table, key_value: typing.List[Condition]):
+    def __init__(self, table, key_value: typing.List[typing.Tuple[str, str]]):
         super().__init__(table)
-        self.key_value = key_value
+        self.key_value = [Condition(kv[0], kv[1]) for kv in key_value]
 
     def build(self) -> str:
         self.sql = "UPDATE  {} SET {}".format(self.table, ",".join([i.to_string() for i in self.key_value]))
