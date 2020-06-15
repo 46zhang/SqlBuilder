@@ -13,19 +13,18 @@
 ### 使用
 **select查询**
 ```python
-# 查询确定的id
-brand_id = Condition("id", 2)
-# 查询不等于"panda"的
-brand_logo = Condition("logo", "panda", OPERATION.OP_NOT_LIKE)
-# 日期要大于等于5月20号的
-brand_date = Condition("date", "20200520", OPERATION.OP_GE)
-print(Select("brand").where([brand_date, brand_id, brand_logo], OPERATION.OP_AND).asc(["id", "date"]).build())
-#等价于'SELECT * FROM brand  WHERE date >= '20200520' and id = '2' and logo not like 'panda'  order by id,date ;'
+#"SELECT * FROM brand  WHERE id = 2 and name like '手机%'  order by id,date ;"
+print(Select("brand").where([('id', '=', 2), ('name', 'like', "手机%")], OPERATION.OP_AND).asc(
+        ["id", "date"]).build())
+# 更新数据
+s = Update("USER", [("name", "Jense"), ("num", '12346')]).where(
+        [("name", "=", "jense")]).build()
+#"UPDATE  USER SET name = 'Jense',num = '12346' WHERE name = 'jense' ;"
 ```
 
 **delete删除**
 ```python
-a = Delete('user').where([Condition("name", "jense")]).build()
+a = Delete('user').where([("name","=","jense")]).build()
 print(a)
 #等价与 'DELETE FROM user  WHERE name = 'jense' ;'
 ```
