@@ -64,10 +64,11 @@ class SqlBuilder(object):
         self.asc_parameter = []
         self.desc_parameter = []
 
-    def join(self, table_list: typing.List[Condition] = None) -> object:
+    def join(self, table_list: typing.List[typing.Tuple[str, str, str]] = None) -> object:
         if table_list:
             for t in table_list:
-                self.join_parameter.append(t.to_string())
+                c = Condition(join_table=t[0], key=t[1], value=t[2], ops=OPERATION.OP_JOIN)
+                self.join_parameter.append(c.to_string())
         return self
 
     def where(self, conditions: typing.List[typing.Tuple[str, str, str or int]], ops: str = None) -> object:
