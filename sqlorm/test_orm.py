@@ -3,6 +3,7 @@ import time
 import uuid
 
 import aiomysql
+import pymysql
 
 from sqlorm import orm
 from sqlorm.model import Model
@@ -25,7 +26,7 @@ class User(Model):
 
 def test_orm():
     asyncio.run(
-        orm.create_pool(asyncio.get_event_loop(), user='root', password='123456', db='mysql', database='sqlorm'))
+        orm.create_pool( user='pusher', password='push', db='sqlorm'))
     u = User(name='Test', email='test@example.com', passwd='1234567890', image='about:blank')
     a = "fafaf"
     print(a)
@@ -34,29 +35,25 @@ def test_orm():
     print("over")
 
 
-loop = asyncio.get_event_loop()
-
-
 async def go():
-    # pool = await aiomysql.create_pool(host='localhost', port=3306,
-    #                                   user='pusher', password='push',
-    #                                   db='sqlorm', loop=loop, autocommit=False)
-    #
-    # with (await pool) as conn:
-    #     cur = await conn.cursor()
-    #     await cur.execute("SELECT 10")
-    #     # print(cur.description)
-    #     (r,) = await cur.fetchone()
-    #     assert r == 10
-    # pool.close()
-    # await pool.wait_closed()
-    conn = await aiomysql.connect(host="127.0.0.1", port=3306,
-                                  user="root", password="123456",
-                                  db="mysql", loop=loop
-                                  )
+    pool = await aiomysql.create_pool(host='localhost', port=3306,
+                                      user='pusher', password='push',
+                                      db='sqlorm', loop=asyncio.get_event_loop(), autocommit=False)
 
-loop.run_until_complete(go())
+    with (await pool) as conn:
+        cur = await conn.cursor()
+        await cur.execute("SELECT 10")
+        # print(cur.description)
+        (r,) = await cur.fetchone()
+        assert r == 10
+    pool.close()
+    await pool.wait_closed()
+    # conn = await aiomysql.connect(host="localhost", port=3306,
+    #                               user="pusher", password="push",
+    #                               db="sqlorm", loop=asyncio.get_event_loop()
+    #                               )
+
 
 if __name__ == "__main__":
-    # test_orm()
-    asyncio.run(go())
+    test_orm()
+    #asyncio.run(go(), debug=True)
