@@ -16,6 +16,11 @@
 #"SELECT * FROM brand  WHERE id = 2 and name like '手机%'  order by id,date ;"
 print(Select("brand").where([('id', '=', 2), ('name', 'like', "手机%")], OPERATION.OP_AND).asc(
         ["id", "date"]).build())
+
+#"SELECT user_id,brand_id,mony FROM shopping join user on shopping.user_id = user.id WHERE shopping.id = 2 or user.name not like 'abc' ;"
+select_user_shopping = Select("shopping", ("user_id,brand_id,mony")).join(
+        [("user", 'shopping.user_id', 'user.id')]).where(
+        [('shopping.id', "=", 2), ('user.name', 'not like', 'abc')], OPERATION.OP_OR).build()
 # 更新数据
 s = Update("USER", [("name", "Jense"), ("num", '12346')]).where(
         [("name", "=", "jense")]).build()

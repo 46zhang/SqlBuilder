@@ -5,9 +5,9 @@ from sqlbuilder.builder import *
 # 数据库配置文件
 mysqlInfo = {
     "host": 'localhost',
-    "user": 'root',
-    "passwd": '123465',
-    "db": 'mall',
+    "user": 'pusher',
+    "password": 'push',
+    "db": 'workorder',
     "port": 3306,
     "charset": 'utf8'
 }
@@ -26,7 +26,7 @@ class OPMysql(object):
     def getmysqlconn():
         if OPMysql.__pool is None:
             OPMysql.__pool = PooledDB(creator=pymysql, mincached=1, maxcached=20, host=mysqlInfo['host'],
-                                      user=mysqlInfo['user'], passwd=mysqlInfo['passwd'], db=mysqlInfo['db'],
+                                      user=mysqlInfo['user'], passwd=mysqlInfo['password'], db=mysqlInfo['db'],
                                       port=mysqlInfo['port'], charset=mysqlInfo['charset'])
             # print(f'---------------{OPMysql.__pool}')
         return OPMysql.__pool.connection()
@@ -75,11 +75,9 @@ class OPMysql(object):
 if __name__ == '__main__':
     mysql = OPMysql()
 
-    sql = Select("ums_admin").where([('id', '>', 2)]).build()
-    print(sql)
+    sql = Select("auth_user").where([('id', '>', 2)]).build()
     try:
         d = mysql.update(sql)
     except Exception as e:
         print("出现的异常情况是 {}".format(e))
-    print(sql)
     mysql.dispose()
