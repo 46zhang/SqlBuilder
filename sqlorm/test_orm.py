@@ -1,8 +1,9 @@
+from utils.log import Logger
 import time
 import uuid
 
 from sqlorm.model import Model
-from sqlorm.field import StringField, FloatField, BooleanField, IntegerField
+from sqlorm.field import StringField, FloatField, IntegerField
 
 
 def next_id():
@@ -20,14 +21,6 @@ class User(Model):
     created_at = FloatField(default=time.time)
 
 
-# async def test_example(loop):
-#     await orm.create_pool(loop=loop, host='localhost', port=3306,
-#                           user='pusher', password='push',
-#                           db='sqlorm', autocommit=False)
-#     u = User(name='Test', email='test@example.com', passwd='1234567890', image='about:blank')
-#     await u.save()
-
-
 if __name__ == "__main__":
-    u = User(name='Test', email='test@example.com', passwd='1234567890', image='about:blank')
+    u = User(name='Test', email='test4123423@example.com', passwd='1234567890', image='about:blank')
     u.save()
