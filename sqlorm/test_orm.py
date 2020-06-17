@@ -1,10 +1,9 @@
-import asyncio
+from utils.log import Logger
 import time
 import uuid
 
-from sqlorm import orm
 from sqlorm.model import Model
-from sqlorm.field import StringField, FloatField, BooleanField
+from sqlorm.field import StringField, FloatField, IntegerField
 
 
 def next_id():
@@ -16,21 +15,12 @@ class User(Model):
     id = StringField(primary_key=True, default=next_id, ddl='varchar(50)')
     email = StringField(ddl='varchar(50)')
     passwd = StringField(ddl='varchar(50)')
-    admin = BooleanField()
+    admin = IntegerField()
     name = StringField(ddl='varchar(50)')
     image = StringField(ddl='varchar(500)')
     created_at = FloatField(default=time.time)
 
 
-async def test_example(loop):
-    await orm.create_pool(loop=loop, host='localhost', port=3306,
-                          user='pusher', password='push',
-                          db='sqlorm', autocommit=False)
-    u = User(name='Test', email='test@example.com', passwd='1234567890', image='about:blank')
-    await u.save()
-
-
-
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(test_example(loop))
+    u = User(name='Test', email='test4123423@example.com', passwd='1234567890', image='about:blank')
+    u.save()
