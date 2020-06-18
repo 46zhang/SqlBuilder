@@ -1,3 +1,5 @@
+import typing
+
 from utils.log import Logger
 
 from MySQLdb.compat import StandardError
@@ -5,6 +7,29 @@ from sqlorm.field import Field
 from sqlorm.orm import select, execute
 
 log = Logger('../log/orm.log', level='info')
+
+OPERATION_MSG = dict(
+    ge='>=',
+    gt='>',
+    le='<=',
+    lt='<'
+)
+# ge表示大于等于,le表示小于等于,gt表示大于,lt表示小于
+VALID_OPERATION = ("=", "!=", "ge", "gt", "le", "lt", "in", "not in", "like", "not like")
+
+
+def get__operation_from_key(key: str) -> typing.Tuple[str, str]:
+    ops_list = key.split("__")
+    if len(ops_list) < 2:
+        return (ops_list[0], '=')
+    else:
+        ops = ops_list[1].replace('_', ' ')
+        if ops not in VALID_OPERATION:
+            raise KeyError
+        # 如果是 <, > ,<= ,>=这四个符号，则需要进行转换
+        if ops in OPERATION_MSG:
+            ops = OPERATION_MSG[ops]
+        return (ops_list[0], ops)
 
 
 class ModelMetaclass(type):
@@ -60,6 +85,12 @@ class Model(dict, metaclass=ModelMetaclass):
     def __setattr__(self, key, value):
         self[key] = value
 
+    def __get__args(self) -> list:
+        args = []
+        for key in self.__fields__:
+            args.append(self.get_value_or_default(key))
+        return args
+
     def get_value(self, key):
         return getattr(self, key, None)
 
@@ -78,57 +109,35 @@ class Model(dict, metaclass=ModelMetaclass):
         return value
 
     @classmethod
-    def findAll(cls, where=None, args=None, **kw):
-        ' find objects by where clause. '
+    def filter(cls, pk=None, order_by=None, **kw):
+        ' find objects by where clause.'
         sql = [cls.__select__]
-        if where:
-            sql.append('where')
-            sql.append(where)
-        if args is None:
-            args = []
-        orderBy = kw.get('orderBy', None)
-        if orderBy:
-            sql.append('order by')
-            sql.append(orderBy)
-        limit = kw.get('limit', None)
-        if limit is not None:
-            sql.append('limit')
-            if isinstance(limit, int):
-                sql.append('?')
-                args.append(limit)
-            elif isinstance(limit, tuple) and len(limit) == 2:
-                sql.append('?, ?')
-                args.extend(limit)
-            else:
-                raise ValueError('Invalid limit value: %s' % str(limit))
-        rs = select(' '.join(sql), args)
-        return [cls(**r) for r in rs]
-
-    @classmethod
-    def findNumber(cls, selectField, where=None, args=None):
-        ' find number by select and where. '
-        sql = ['select %s _num_ from `%s`' % (selectField, cls.__table__)]
-        if where:
-            sql.append('where')
-            sql.append(where)
-        rs = select(' '.join(sql), args, 1)
-        if len(rs) == 0:
-            return None
-        return rs[0]['_num_']
-
-    @classmethod
-    def find(cls, pk):
-        ' find object by primary key. '
-        rs = select('%s where `%s`=?' % (cls.__select__, cls.__primary_key__), [pk], 1)
-        if len(rs) == 0:
-            return None
-        return cls(**rs[0])
-
-    def __get__args(self) -> list:
+        # 如果存在主键，则直接按照主键进行搜索
+        if pk:
+            rs = select('%s where `%s`=?' % (cls.__select__, cls.__primary_key__), [pk], 1)
+            return cls(**rs[0])
         args = []
-        for key in self.__fields__:
-            args.append(self.get_value_or_default(key))
-        return args
+        # 相等的键值对，key是属性，value属性值
+        if kw:
+            sql.append('where')
+            first = True
+            for k, v in kw.items():
+                try:
+                    k, ops = get__operation_from_key(k)
+                    if first:
+                        sql.append(" %s %s " % (k, ops) + " '%s' ")
+                        first = False
+                    else:
+                        sql.append(" and %s %s " % (k, ops) + " '%s' ")
+                    args.append(v)
+                except Exception as e:
+                    log.logger.error(e)
+        if order_by:
+            sql.append('order by')
+            sql.append(order_by)
+        rs = select(' '.join(sql), args)
+        # 把dict 转为 object类型
+        return [cls(**r) for r in rs]
 
     def save(self):
         # 获取参数

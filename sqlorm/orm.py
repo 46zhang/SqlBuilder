@@ -1,7 +1,7 @@
 from mysql.mysql_connector import OPMysql
 
 
-def select(sql: str, args, size=None):
+def select(sql: str, args: list, size=None):
     """
     select function
     :param sql:
@@ -11,15 +11,16 @@ def select(sql: str, args, size=None):
     """
     mysql = OPMysql()
     args_tuple = tuple(args)
-    s = sql.replace('?', "'%s'") % args_tuple
+    s = sql % args_tuple + ";"
     if size:
-        mysql.select_one(s)
+        rs = mysql.select_one(s)
     else:
-        mysql.select_all(s)
+        rs = mysql.select_all(s)
     mysql.dispose()
+    return rs
 
 
-def execute(sql, args):
+def execute(sql: str, args: list):
     """
     insert update delete function
     :param sql:

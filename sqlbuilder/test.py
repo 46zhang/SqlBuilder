@@ -10,9 +10,11 @@ if __name__ == '__main__':
     # "SELECT * FROM brand  WHERE id = 2 and name like '手机%'  order by id,date ;"
     print(Select("brand").where([('id', '=', 2), ('name', 'like', "手机%")], OPERATION.OP_AND).asc(
         ["id", "date"]).build())
+    # "SELECT id,username,password FROM user  WHERE id 1 'and' and username jense 'and' and password 123456 'and' ;"
+    print(Select("user", "id,username,password").where(['id', 'username', 'password'], [1, "jense", "123456"]).build())
     select_user_shopping = Select("shopping", ("user_id,brand_id,mony")).join(
         [("user", 'shopping.user_id', 'user.id')]).where(
-        [('shopping.id', "=", 2), ('user.name', 'not like', 'abc')], OPERATION.OP_OR).build()
+        [('shopping.id', "=", 2), ('user.name', 'not like', 'abc')]).build()
     # "SELECT * FROM shopping join user on shopping.user_id = user.id WHERE shopping.id = 2 or user.name not like 'abc' ;"
     print(select_user_shopping)
     # 更新数据
