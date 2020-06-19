@@ -6,7 +6,7 @@ from MySQLdb.compat import StandardError
 from sqlorm.field import Field
 from sqlorm.orm import select, execute
 
-log = Logger('../log/orm.log', level='info')
+log = Logger('../log/orm.log', level='error')
 
 OPERATION_MSG = dict(
     ge='>=',
@@ -21,7 +21,7 @@ VALID_OPERATION = ("=", "!=", "ge", "gt", "le", "lt", "in", "not in", "like", "n
 def get__operation_from_key(key: str) -> typing.Tuple[str, str]:
     ops_list = key.split("__")
     if len(ops_list) < 2:
-        return (ops_list[0], '=')
+        return ops_list[0], '='
     else:
         ops = ops_list[1].replace('_', ' ')
         if ops not in VALID_OPERATION:
@@ -29,7 +29,7 @@ def get__operation_from_key(key: str) -> typing.Tuple[str, str]:
         # 如果是 <, > ,<= ,>=这四个符号，则需要进行转换
         if ops in OPERATION_MSG:
             ops = OPERATION_MSG[ops]
-        return (ops_list[0], ops)
+        return ops_list[0], ops
 
 
 class ModelMetaclass(type):
@@ -109,7 +109,7 @@ class Model(dict, metaclass=ModelMetaclass):
         return value
 
     @classmethod
-    def filter(cls, pk=None, order_by=None, **kw):
+    def filter(cls, pk=None, order_by=None, order_by_decs=None, size: int = None, **kw):
         ' find objects by where clause.'
         sql = [cls.__select__]
         # 如果存在主键，则直接按照主键进行搜索
@@ -133,11 +133,24 @@ class Model(dict, metaclass=ModelMetaclass):
                 except Exception as e:
                     log.logger.error(e)
         if order_by:
-            sql.append('order by')
-            sql.append(order_by)
-        rs = select(' '.join(sql), args)
+            sql.append("order by %s")
+            if isinstance(order_by, list):
+                args.append(','.join(order_by))
+            else:
+                args.append(order_by)
+        elif order_by_decs:
+            sql.append("order by %s desc")
+            if isinstance(order_by_decs, list):
+                args.append(','.join(order_by_decs))
+            else:
+                args.append(order_by_decs)
+        rs = select(' '.join(sql), args, size)
         # 把dict 转为 object类型
         return [cls(**r) for r in rs]
+
+    @classmethod
+    def query(cls, sql: str):
+        rs = select(sql)
 
     def save(self):
         # 获取参数

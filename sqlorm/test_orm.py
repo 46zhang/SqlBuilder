@@ -22,6 +22,8 @@ class User(Model):
 
 
 if __name__ == "__main__":
-    querySet = User.filter(email='test4123423@example.com')
-    u = User(name='Test', email='test4123423@example.com', passwd='1234567890', image='about:blank')
-    u.save()
+    querySet = User.filter(email='test4123423@example.com', order_by_decs=['id', 'name'],size=5)
+    for i in querySet:
+        print(i)
+    #u = User(name='Test', email='test4123423@example.com', passwd='1234567890', image='about:blank')
+    #u.save()
