@@ -71,16 +71,30 @@ class SqlBuilder(object):
                 self.join_parameter.append(c.to_string())
         return self
 
-    def where(self, conditions: typing.List[typing.Tuple[str, str, str or int]], ops: str = None) -> object:
-        # 默认是条件and
-        if not ops or ops == OPERATION.OP_AND:
-            # 遍历，然后添加字符串到condition_parameter列表中
-            for c in conditions:
-                self.condition_and_parameter.append(Condition(c[0], c[2], c[1]).to_string())
-        # 添加到或的条件中
-        elif ops == OPERATION.OP_OR:
-            for c in conditions:
-                self.condition_or_parameter.append(Condition(c[0], c[2], c[1]).to_string())
+    def where(self,
+              keys: typing.List = None,
+              values: typing.List = None,
+              conditions: typing.List[typing.Tuple[str, str, str or int]] = None,
+              ops: str = None
+              ) -> object:
+        if conditions:
+            # 默认是条件and
+            if not ops or ops == OPERATION.OP_AND:
+                # 遍历，然后添加字符串到condition_parameter列表中
+                for c in conditions:
+                    self.condition_and_parameter.append(Condition(c[0], c[2], c[1]).to_string())
+            # 添加到或的条件中
+            elif ops == OPERATION.OP_OR:
+                for c in conditions:
+                    self.condition_or_parameter.append(Condition(c[0], c[2], c[1]).to_string())
+        # 如果参数是以俩个列表直接传入
+        if keys and values:
+            if not ops or ops == OPERATION.OP_AND:
+                for k, v in zip(keys, values):
+                    self.condition_and_parameter.append(Condition(k, OPERATION.OP_AND, v).to_string())
+            if ops == OPERATION.OP_OR:
+                for k, v in zip(keys, values):
+                    self.condition_or_parameter.append(Condition(k, OPERATION.OP_OR, v).to_string())
         return self
 
     def group_by(self, columns: typing.List[str]):

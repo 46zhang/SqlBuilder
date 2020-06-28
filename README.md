@@ -13,25 +13,35 @@
 ### 使用
 **select查询**
 ```python
-#"SELECT * FROM brand  WHERE id = 2 and name like '手机%'  order by id,date ;"
+#1.直接用where放置列表来做筛选
 print(Select("brand").where([('id', '=', 2), ('name', 'like', "手机%")], OPERATION.OP_AND).asc(
         ["id", "date"]).build())
+等价于
+#"SELECT * FROM brand  WHERE id = 2 and name like '手机%'  order by id,date ;"
 
-#"SELECT user_id,brand_id,mony FROM shopping join user on shopping.user_id = user.id WHERE shopping.id = 2 or user.name not like 'abc' ;"
+#2. 直接用俩个列表传入数据来做筛选
+print(Select("user", "id,username,password").where(['id', 'username', 'password'], [1, "jense", "123456"]).build())
+等价于
+# "SELECT id,username,password FROM user  WHERE id 1 'and' and username jense 'and' and password 123456 'and' ;"
+#3. 联表查询
 select_user_shopping = Select("shopping", ("user_id,brand_id,mony")).join(
         [("user", 'shopping.user_id', 'user.id')]).where(
-        [('shopping.id', "=", 2), ('user.name', 'not like', 'abc')], OPERATION.OP_OR).build()
-# 更新数据
-s = Update("USER", [("name", "Jense"), ("num", '12346')]).where(
-        [("name", "=", "jense")]).build()
-#"UPDATE  USER SET name = 'Jense',num = '12346' WHERE name = 'jense' ;"
+        [('shopping.id', "=", 2), ('user.name', 'not like', 'abc')]).build()
+等价于
+#"SELECT id,username,password FROM user  WHERE id 1 'and' and username jense 'and' and password 123456 'and' ;"
+```
+**插入数据**
+```python
+# 插入数据
+i = Insert('user', ['id', 'name', 'password'], [123, 'jense', '456']).build()
+# "INSERT INTO user (id , name , password) value (123 , 'jense' , '456');"
 ```
 
 **delete删除**
 ```python
-a = Delete('user').where([("name","=","jense")]).build()
+a = Delete('user').where([(["name","id","password"],["jense",2,"123455"])]).build()
 print(a)
-#等价与 'DELETE FROM user  WHERE name = 'jense' ;'
+#等价与 "DELETE FROM user  WHERE name = 'jense' and id=2 and password='123455' ;"
 ```
 ## SQL ORM
 todo

@@ -45,14 +45,12 @@ class OPMysql(object):
         else:
             self.cur.execute(sql, param)  # 执行sql
         select_res = self.cur.fetchone()  # 返回结果为字典
-        # print('op_select', select_res)
         return select_res
 
     def select_all(self, sql):
         # $print('op_select', sql)
         self.cur.execute(sql)  # 执行sql
         select_res = self.cur.fetchall()  # 返回结果为字典
-        # print('op_select', select_res)
         return select_res
 
         # 释放资源
