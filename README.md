@@ -1,11 +1,9 @@
 # SQL解析器与SQL ORM实现
 ## 项目背景
-目前orm框架是主流的数据库操作方式，但是其存在着灵活性不高的问题，我在项目中使用了django的orm框架， 发现存在俩个问题   
-1. 联表查询不方便，如果表格之间没有外键关联，往往需要建立第三个表来映射俩个表格之间的关系  
-2. 多条件查询以及嵌套查询不方便，在进行多个条件过滤时，可以使用query_set的与、或等操作进行拼接，但是效率低下
-
+目前orm框架是主流的数据库操作方式，虽然其存在着效率不够高的问题，但是在项目开发中，极大地提升了开发效率，大多数orm框架都较为复杂，学习成本较高，本项目旨在实现orm框架最核心部分，降低orm学习成本，增加orm框架的灵活性。
 ## 本项目
-本项目旨在通过提供灵活多变、可拓展性高sql语句解析器，通过调用链的方式实现对sql语句的拼接生成，减少重复的代码量
+本项目旨在实现一个轻量级的orm框架，手把手教大家完成一个orm框架
+此外，本项目还提供灵活多变、可拓展性高sql语句解析器，通过调用链的方式实现对sql语句的拼接生成，减少重复的代码量
 
 同时本项目正在实现一个orm框架
 
@@ -44,8 +42,28 @@ print(a)
 #等价与 "DELETE FROM user  WHERE name = 'jense' and id=2 and password='123455' ;"
 ```
 ## SQL ORM
-todo
+demo
 
+```python
+class User(Model):
+    '''table name'''
+    __table__ = 'users'
+    '''primary_key'''
+    id = StringField(primary_key=True, default=next_id, ddl='varchar(50)')
+    email = StringField(ddl='varchar(50)')
+    passwd = StringField(ddl='varchar(50)')
+    admin = IntegerField()
+    name = StringField(ddl='varchar(50)')
+    image = StringField(ddl='varchar(500)')
+    created_at = FloatField(default=time.time)
+
+querySet = User.filter(email='test4123423@example.com', order_by_decs=['id', 'name'],size=5)
+    for i in querySet:
+        '''打印输出结果'''
+        print(i)
+
+
+```
 
 ## 设计之禅
 1. 灵活多变为第一要素
